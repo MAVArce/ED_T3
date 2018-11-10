@@ -122,6 +122,11 @@ int operations(NODE* root){                             //Função que com base 
     int right;                                              //Inteiro que receberá a saída do filho da direita
     int result;                                             //Inteiro que receberá a saída final do nó
 
+    if(root==NULL){
+        printf("Não há nenhuma árvore alocada");
+        return -1;
+    }
+
     type=root->name[0];                                     //Auxiliar recebendo o tipo do nó
     
     if(root->left!=NULL)                                    //Caso o filho da esquerda seja diferente de nulo, chama a função para calcular sua saída
@@ -149,6 +154,9 @@ int operations(NODE* root){                             //Função que com base 
 }
 
 void free_all(NODE** root){                             //Função que liberá toda a memória alocada para a formação do sistema
+    if(*root==NULL)                                         //Caso a árvore esteja vazia, retorna
+        return;
+
     if((*root)->name[0]=='E'){                              //Caso o nó seja uma entrada, libera a memória do nó, torna o seu ponteiro nulo e retorna
         free(*root);
         *root=NULL;
@@ -172,9 +180,13 @@ int main (int argc, char* argv[]) {
     int mode;                                               //Inteiro que conterá o modo em que será introduzido o sistema
     int lines;                                              //Número de linhas para o caso 3-a
     int loops;                                              //Número de vezes em que serão inseridas entradas diferentes
+    int final;                                              //Recebe a saída final dado um grupo de entradas                                      
 
-    scanf("%d", &mode);                                     //Identifica o modo em que será introduzido o sistema
-    getchar();
+    do{ scanf("%d", &mode);                                     //Identifica o modo em que será introduzido o sistema
+        getchar();
+        if(mode!=0 && mode!=1)
+            printf("Não há essa opção");
+    }while(mode!=0 && mode!=1);
     
     if(mode==0){                                            //Caso para o modo 3-a
         scanf("%d", &lines);                                //Identifica o número de linhas para a criação do sistema
@@ -184,17 +196,22 @@ int main (int argc, char* argv[]) {
             if(create_system_a(&root)==ERROR)
                 return ERROR;
         }
-    }else if(mode==1){                                      //Caso para o modo 3-b
-        if(create_system_b(&root)==1)                       //Cria o sistema com base no modo 3-b
+    }else{                                      //Caso para o modo 3-b
+        if(create_system_b(&root)==ERROR)                       //Cria o sistema com base no modo 3-b
             return ERROR;                          
     }
 
     scanf("%d", &loops);                                    //Identifica quantos grupos de entradas serão inseridos no sistema
     getchar();
 
-    for( ; loops>0; loops--)           
-        printf("%d\n", operations(root));                   //Faz a operação para cada grupo de entrada e já imprime o resultado final
-
+    for( ; loops>0; loops--){
+        final=operations(root);
+        if(final!=-1){           
+            printf("%d\n", final);                   //Faz a operação para cada grupo de entrada e já imprime o resultado final
+        }else{
+            break;
+        }
+    }
     free_all(&root);                                        //Libera toda a memória alocada para a formação do sistema
     return OK;
 }
