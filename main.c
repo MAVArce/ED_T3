@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define OK 0
-#define ERROR 1
+#define ERROR -1
 
 struct node{                                            //Struct que representa cada nó da árvore
     char name[4];                                          //String na qual está presente a identificação da porta ou entrada
@@ -29,7 +29,7 @@ NODE* create_door(char entry[]){                        //Função que cria uma 
 }
 
 void search(NODE** root, NODE** cursor, char entry[]){  //Função que localiza uma determinada porta ou entrada com base na sua identificação para o caso 3-a
-    if((*cursor)!=NULL)                                     //Como funciona com recursão, esse comando serve para interromper e terminar a recursão caso a porta ou entrada já tenha sido encontrada
+    if((*cursor)!=NULL)                                     //Como funciona com recursão, esse comando serve para interromper e terminar rapidamente a recursão caso o nó já tenha sido encontrado
         return;
 
     if(strcmp(entry, (*root)->name)==0){                    //Compara a identificação que temos com a identificação do nó para ver se são as mesmas
@@ -37,14 +37,13 @@ void search(NODE** root, NODE** cursor, char entry[]){  //Função que localiza 
         return;
     }
 
-    if((*root)->name[0]=='E')                               //Caso o nó seja uma entrada, retorna pois a entrada não tem filhos
-        return;
+    if((*root)->name[0]!='E'){                               //Caso o nó seja uma entrada, retorna pois a entrada não tem filhos
+        if((*root)->left!=NULL)                                 //Se o filho da esquerda for diferente de nulo, chama a função para procurar nesse filho
+            search(&(*root)->left, cursor, entry);
     
-    if((*root)->left!=NULL)                                 //Se o filho da esquerda for diferente de nulo, chama a função para procurar nesse filho
-        search(&(*root)->left, cursor, entry);
-    
-    if((*root)->name[0]!='N' && (*root)->right!=NULL)      //Se o nó não for um do tipo NOT e o filho da direita não for nulo, chama a função para procurar nesse filho
-        search(&(*root)->right, cursor, entry);
+        if((*root)->name[0]!='N' && (*root)->right!=NULL)      //Se o nó não for um do tipo NOT e o filho da direita não for nulo, chama a função para procurar nesse filho
+            search(&(*root)->right, cursor, entry);
+    }
 }
 
 int create_system_a(NODE** root){                      //Função que cria o sistema baseado no modo 3-a
@@ -97,21 +96,14 @@ int create_system_b(NODE** root){                      //Função que usa de rec
     if(*root==NULL)                                         //Caso a memória não tenha sido alocada, retorna ERROR
         return ERROR;
 
-    if((*root)->name[0]=='E')                               //Caso o nó seja uma entrada, retorna OK pois ela não terá filho
-        return OK;
-
-    if(create_system_b(&(*root)->left)==ERROR)              //Chama a função para criar o nó do filho da esquerda
-        return ERROR;
-
-    if(&(*root)->left==NULL)                                //Caso a memória não tenha sido alocada, retorna ERROR
-        return ERROR;
-
-    if((*root)->name[0]!='N'){                              //Caso o nó não seja do tipo NOT, chama a função para criar o nó do filho da direita
-        if(create_system_b(&(*root)->right)==ERROR)
+    if((*root)->name[0]!='E'){                               //Caso o nó seja uma entrada, retorna OK pois ela não terá filho
+        if(create_system_b(&(*root)->left)==ERROR)              //Chama a função para criar o nó do filho da esquerda
             return ERROR;
 
-        if(&(*root)->right==NULL)                           //Caso a memória não tenha sido alocada, retorna ERROR
-            return ERROR;
+        if((*root)->name[0]!='N'){                              //Caso o nó não seja do tipo NOT, chama a função para criar o nó do filho da direita
+            if(create_system_b(&(*root)->right)==ERROR)
+                return ERROR;
+        }
     }
     return OK;
 }
@@ -124,7 +116,7 @@ int operations(NODE* root){                             //Função que com base 
 
     if(root==NULL){
         printf("Não há nenhuma árvore alocada");
-        return -1;
+        return ERROR;
     }
 
     type=root->name[0];                                     //Auxiliar recebendo o tipo do nó
@@ -157,16 +149,12 @@ void free_all(NODE** root){                             //Função que liberá t
     if(*root==NULL)                                         //Caso a árvore esteja vazia, retorna
         return;
 
-    if((*root)->name[0]=='E'){                              //Caso o nó seja uma entrada, libera a memória do nó, torna o seu ponteiro nulo e retorna
-        free(*root);
-        *root=NULL;
-        return;
-    }
-
-    free_all(&(*root)->left);                               //Chama a função para liberar a memória do filho da esquerda
+    if((*root)->name[0]!='E'){                              //Caso o nó seja uma entrada, libera a memória do nó, torna o seu ponteiro nulo e retorna
+        free_all(&(*root)->left);                               //Chama a função para liberar a memória do filho da esquerda
     
-    if((*root)->name[0]!='N')                               //Caso o nó seja diferente de um NOT, haverá um filho da direita, logo chama a função para liberar a memória dele
-        free_all(&(*root)->right);
+        if((*root)->name[0]!='N')                               //Caso o nó seja diferente de um NOT, haverá um filho da direita, logo chama a função para liberar a memória dele
+            free_all(&(*root)->right);
+    }
 
     if((*root)->left==NULL && (*root)->right==NULL){        //Após toda a memória dos filhos for liberada, liberá a memória do próprio nó
         free(*root);
@@ -206,7 +194,7 @@ int main (int argc, char* argv[]) {
 
     for( ; loops>0; loops--){
         final=operations(root);
-        if(final!=-1){           
+        if(final!=ERROR){           
             printf("%d\n", final);                   //Faz a operação para cada grupo de entrada e já imprime o resultado final
         }else{
             break;
