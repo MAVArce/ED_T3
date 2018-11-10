@@ -6,7 +6,6 @@
 
 struct node{
     char name[4];
-    int bit;
     struct node* left;
     struct node* right; 
 };
@@ -66,7 +65,6 @@ void create_system_a(NODE** root){
         if(cursor==NULL)    
             return;
     }
-    //printf("I get here\n");
     scanf("%s", entry_l);
     entry_l[3]='\0';
     getchar();
@@ -99,20 +97,6 @@ void create_system_b(NODE** root){
     create_system_b(&(*root)->right);
 }
 
-void insert_bites(NODE** root){
-    if((*root)->name[0]=='E'){
-        scanf("%d", &(*root)->bit);
-        getchar();
-        return;
-    }
-
-    insert_bites(&(*root)->left);
-    if((*root)->name[0]=='N'){
-        return;
-    }
-    insert_bites(&(*root)->right);
-}
-
 int operations(NODE* root){
     char type;
     int left;
@@ -127,7 +111,8 @@ int operations(NODE* root){
         right=operations(root->right);
     
     if(type=='E'){
-        result = root->bit;
+        scanf("%d", &result);
+        getchar();
     }else if(type=='A'){
         result = left & right;
     }else if(type=='O'){
@@ -190,7 +175,6 @@ int main (int argc, char* argv[]) {
     getchar();
 
     for( ; loops>0; loops--){
-        insert_bites(&root);
         printf("%d\n", operations(root));
     }
 
