@@ -41,7 +41,7 @@ void search(NODE** root, NODE** cursor, char entry[]){  //Função que localiza 
         if((*root)->left!=NULL)                                 //Se o filho da esquerda for diferente de nulo, chama a função para procurar nesse filho
             search(&(*root)->left, cursor, entry);
     
-        if((*root)->name[0]!='N' && (*root)->right!=NULL)      //Se o nó não for um do tipo NOT e o filho da direita não for nulo, chama a função para procurar nesse filho
+        if((*root)->right!=NULL)                                //Se o filho da direita do nó não for nulo, chama a função para procurar nesse filho
             search(&(*root)->right, cursor, entry);
     }
 }
@@ -60,7 +60,7 @@ int create_system_a(NODE** root){                      //Função que cria o sis
     }else{                                                  
         search(root, &cursor , entry[0]);                   //Caso a árvore já tenha sido criada, localiza o nó pai na árvore e o cursor recebe o seu endereço
         if(cursor==NULL){
-            printf("Nó não encontrado");    
+            printf("No nao encontrado");    
             return ERROR;
         }
     }
@@ -91,7 +91,7 @@ int create_system_b(NODE** root){                      //Função que usa de rec
     scanf("%s", entry);                                     //Identifica o nó a ser criado
     entry[3]='\0';
     getchar();
-    
+
     *root=create_door(entry);                               //Cria o nó na árvore
     if(*root==NULL)                                         //Caso a memória não tenha sido alocada, retorna ERROR
         return ERROR;
@@ -115,7 +115,7 @@ int operations(NODE* root){                             //Função que com base 
     int result;                                             //Inteiro que receberá a saída final do nó
 
     if(root==NULL){
-        printf("Não há nenhuma árvore alocada");
+        printf("Nao ha nenhuma arvore alocada");
         return ERROR;
     }
 
@@ -149,18 +149,11 @@ void free_all(NODE** root){                             //Função que liberá t
     if(*root==NULL)                                         //Caso a árvore esteja vazia, retorna
         return;
 
-    if((*root)->name[0]!='E'){                              //Caso o nó seja uma entrada, libera a memória do nó, torna o seu ponteiro nulo e retorna
-        free_all(&(*root)->left);                               //Chama a função para liberar a memória do filho da esquerda
-    
-        if((*root)->name[0]!='N')                               //Caso o nó seja diferente de um NOT, haverá um filho da direita, logo chama a função para liberar a memória dele
-            free_all(&(*root)->right);
-    }
+    free_all(&(*root)->left);                               //Chama a função para liberar a memória do filho da esquerda    
+    free_all(&(*root)->right);                              //Chama a função para liberar a memória do filho da direita
 
-    if((*root)->left==NULL && (*root)->right==NULL){        //Após toda a memória dos filhos for liberada, liberá a memória do próprio nó
-        free(*root);
-        *root=NULL;
-        return;
-    }
+    free(*root);                                            //Após toda a memória dos filhos for liberada, liberá a memória do próprio nó
+    *root=NULL;
 }
 
 int main (int argc, char* argv[]) {
@@ -173,29 +166,33 @@ int main (int argc, char* argv[]) {
     do{ scanf("%d", &mode);                                     //Identifica o modo em que será introduzido o sistema
         getchar();
         if(mode!=0 && mode!=1)
-            printf("Não há essa opção");
+            printf("Nao ha essa opcao");
     }while(mode!=0 && mode!=1);
     
     if(mode==0){                                            //Caso para o modo 3-a
         scanf("%d", &lines);                                //Identifica o número de linhas para a criação do sistema
         getchar();
         
-        for( ; lines>0; lines--){                            //Cria o sistema com base no modo 3-a
-            if(create_system_a(&root)==ERROR)
+        for( ; lines>0; lines--){                           //Cria o sistema com base no modo 3-a
+            if(create_system_a(&root)==ERROR){
+                free_all(&root);
                 return ERROR;
+            }
         }
     }else{                                      //Caso para o modo 3-b
-        if(create_system_b(&root)==ERROR)                       //Cria o sistema com base no modo 3-b
-            return ERROR;                          
+        if(create_system_b(&root)==ERROR){                  //Cria o sistema com base no modo 3-b
+            free_all(&root);
+            return ERROR;         
+        }                 
     }
 
-    scanf("%d", &loops);                                    //Identifica quantos grupos de entradas serão inseridos no sistema
+    scanf("%d", &loops);                                       //Identifica quantos grupos de entradas serão inseridos no sistema
     getchar();
 
     for( ; loops>0; loops--){
         final=operations(root);
         if(final!=ERROR){           
-            printf("%d\n", final);                   //Faz a operação para cada grupo de entrada e já imprime o resultado final
+            printf("%d\n", final);                             //Faz a operação para cada grupo de entrada e já imprime o resultado final
         }else{
             break;
         }
